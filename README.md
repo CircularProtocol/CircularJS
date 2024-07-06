@@ -17,11 +17,12 @@ The Circular Layer 1 Blockchain Protocol Interface Library is a JavaScript libra
 To use the Circular Library in your project, include it directly in your HTML or JavaScript file:
 
 ### NodeJS/Typescript
+
+Install dependency:
 ```bash
 npm install circular-library
 ```
 
-### NodeJS / Typescript
 ```javascript
 // test.mjs or test.ts
 import Circular, { NAG_URL_DEFAULT } from "circular-library"
@@ -52,7 +53,7 @@ const Circular = CircularLibrary(
 // Set your Network Access Gateway key, not necessary if given in the "constructor"
 Circular.SetNAGKey('your_nag_key');
 
-<</script>
+</script>
 ```
 
 #### Using the library
