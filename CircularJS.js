@@ -1,38 +1,36 @@
-/******************************************************************************* 
+/*******************************************************************************
 
         CIRCULAR LAYER 1 BLOCKCHAIN PROTOCOL INTERFACE LIBRARY
         License : Open Source for private and commercial use
-                     
+
         CIRCULAR GLOBAL LEDGERS, INC. - USA
-        
-                     
-        Version : 1.0.7
-                     
+
+
+        Version : 1.1.0
+
         Creation: 7/12/2022
         Update  : 5/16/2024
-                  
+
         Originator: Gianluca De Novi, PhD
-        Contributors: <names here>           
-        
+        Contributors: Sebastian Lagemann, <names here>
+
 *******************************************************************************/
 
-
-
-
-
-
-
 /*****************************
- *   Circular Class 
+ *   Circular Class
  */
-var Circular = (function(){
- 
+export const NAG_URL_DEFAULT = 'https://nag.circularlabs.io/NAG.php?cep=';
+export default function Circular(
+    NAG_KEY= '',
+    NAG_URL= 'https://nag.circularlabs.io/NAG.php?cep='
+){
 
-// Support Node Software Version 
+
+// Support Node Software Version
 const Version = '1.0.7';
 
-// Library Errors Variable  
-var LastError;
+// Library Errors Variable
+let LastError;
 
 /*****************************
  *  Retrieves the Library Error
@@ -47,7 +45,7 @@ function GetError(){  return LastError; }
 /*****************************
  * Function to add a leading zero to numbers less than 10
  * num : number to pad
- * 
+ *
  */
 function padNumber(num) {
     return num < 10 ? '0' + num : num;
@@ -56,14 +54,14 @@ function padNumber(num) {
 
 
 
-/***************************** 
+/*****************************
  *  Generate Timestamp formated
  *  YYYY:MM:DD-hh:mm:ss
  */
 function getFormattedTimestamp() {
     let date = new Date();
     let year = date.getFullYear();
-    let month = padNumber(date.getMonth() + 1);  
+    let month = padNumber(date.getMonth() + 1);
     let day = padNumber(date.getDate());
     let hours = padNumber(date.getHours());
     let minutes = padNumber(date.getMinutes());
@@ -72,12 +70,12 @@ function getFormattedTimestamp() {
 }
 
 
-    
-/***************************** 
+
+/*****************************
  *  Sign a message using secp256k1
  *  message: Message to sign
  *  provateKey: Private key in hex format (minus '0x')
- */      
+ */
 function SignMessage( message, privateKey) {
     const EC = elliptic.ec;
     const ec = new EC('secp256k1');
@@ -87,7 +85,7 @@ function SignMessage( message, privateKey) {
     // The signature is a DER-encoded hex string
     const signature = key.sign(msgHash).toDER('hex');
     return signature;
-}      
+}
 
 
 
@@ -103,11 +101,11 @@ function verifySignature(publicKey, message, signature) {
     const msgHash = sha256(message);
 
     return key.verify(msgHash, signature, 'hex');
-} 
+}
 
 
 
- 
+
 
 /*****************************
  *   Returns a public key from a private key
@@ -117,8 +115,8 @@ function getPublicKey(privateKey) {
     const ec = new EC('secp256k1');
     const key = ec.keyFromPrivate(privateKey, 'hex');
     const publicKey = key.getPublic('hex');
-    
-  
+
+
     return publicKey;
 }
 
@@ -140,13 +138,13 @@ function stringToHex(str) {
 
 
 /*****************************
- *  Converts a hexadecimal string in a regulare string 
+ *  Converts a hexadecimal string in a regulare string
  */
 function hexToString(hex) {
-    var str = '';
+    let str = '';
     hex = HexFix(hex);
-    for (var i = 0; i < hex.length; i += 2) {
-        var code = parseInt(hex.substr(i, 2), 16);
+    for (let i = 0; i < hex.length; i += 2) {
+        let code = parseInt(hex.substr(i, 2), 16);
         if (!isNaN(code) && code !== 0) {
             str += String.fromCharCode(code);
         }
@@ -160,34 +158,26 @@ function hexToString(hex) {
 /*****************************
  *
  *  removes '0x' from hexadecimal numbers if the have it
- * 
+ *
  */
 function HexFix(word)
 {
    if (typeof word === 'string') {
-       var Word = word;
+       let Word = word;
        if (word.startsWith('0x')) { Word = Word.slice(2); }
        return Word;
    }
    return '';
 }
- 
- 
 
 
 
 
- 
- 
+
+
+
+
 /* NAG FUNCTIONS **************************************************************/
-
-
-// Application NAG Key
-var NAG_KEY='';
-
-// Default NAG Link 
-var NAG_URL='https://nag.circularlabs.io/NAG.php?cep=';
-
 
 /*****************************
  *  Sets the Application NAG Key
@@ -200,8 +190,8 @@ function SetNAGKey(NAGKey)
 
 
 /*****************************
- *  Sets the Network Access Gateway (NAG) URL 
- *  If not used, the default URL is selected 
+ *  Sets the Network Access Gateway (NAG) URL
+ *  If not used, the default URL is selected
  */
 function SetNAGURL(NURL)
 {
@@ -215,7 +205,7 @@ function SetNAGURL(NURL)
 
 /*****************************
  *   Test the execution of a smart contract project
- *   
+ *
  *   Blockchain: Blockchain where the smart contract will be tested
  *   From: Developer's wallet address
  *   Project: Hyper Code Lighe Smart Contract Project
@@ -226,11 +216,11 @@ function TestContract(Blockchain, From, Project) {
      let data = {
      "Blockchain" : HexFix(Blockchain),
            "From" : HexFix(From),
-      "Timestamp" : getFormattedTimestamp(), 
+      "Timestamp" : getFormattedTimestamp(),
         "Project" : StringToHex(Project),
         "Version" : Version
     }
-    
+
     return fetch(NAG_URL + 'Circular_TestContract_', {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
@@ -251,23 +241,23 @@ function TestContract(Blockchain, From, Project) {
 
 /*****************************
  *  Local Smart Contract Call
- *  
+ *
  *  Blockchain: Blockchain where the Smart Contract is deployed
  *  From: Caller wallet Address
  *  Address: Smart Contract Address
  *  Request: Smart Contract Local endpoint
  */
 function CallContract(Blockchain, From, Address, Request){
-        
+
     let data = {
      "Blockchain" : HexFix(Blockchain),
            "From" : HexFix(From),
-        "Address" : HexFix(Address), 
-        "Request" : StringToHex(Request), 
+        "Address" : HexFix(Address),
+        "Request" : StringToHex(Request),
       "Timestamp" : getFormattedTimestamp(),
         "Version" : Version
     }
-    
+
     return fetch(NAG_URL + 'Circular_CallContract_', {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
@@ -288,17 +278,17 @@ function CallContract(Blockchain, From, Address, Request){
 
 /* WALLET FUNCTIONS  **********************************************************/
 
-/***************************** 
- *  Retrieves a Wallet 
- *  
+/*****************************
+ *  Retrieves a Wallet
+ *
  *  Blockchain: Blockchain where the wallet is registered
  *  Address: Wallet Address
  */
 function GetWallet(Blockchain, Address) {
 
    if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-     
-    
+
+
     let data = {
         "Blockchain" : HexFix(Blockchain),
            "Address" : HexFix(Address),
@@ -324,7 +314,7 @@ function GetWallet(Blockchain, Address) {
 
 
 
-/***************************** 
+/*****************************
  *   Retrieves the balance of a specified asset in a Wallet
  *   Blockchain: Blockchain where the wallet is registered
  *   Address: Wallet address
@@ -358,37 +348,37 @@ function GetWalletBalance(Blockchain, Address, Asset) {
 
 
 
-/***************************** 
+/*****************************
  *   Register a wallet on a desired blockchain.
  *   The same wallet can be registered on multiple blockchains
  *   Blockchain: Blockchain where the wallet will be registered
  *   PublicKey: Wallet PublicKey
- *   
+ *
  *   Without registration on the blockchain the wallet will not be reachable
  */
 async function RegisterWallet(Blockchain,PublicKey) {
 
     if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
     if (PublicKey.startsWith('0x')) { PublicKey = PublicKey.slice(2);    }
-  
+
      var From       = sha256(PublicKey);
      var To         = From ;
      var Nonce      = '0';
      var Type       = 'C_TYPE_REGISTERWALLET';
-      
+
      var PayloadObj = {"Action" : "CP_REGISTERWALLET",
                        "PublicKey": PublicKey};
-     
+
      var jsonstr    = JSON.stringify(PayloadObj);
      var Payload    = stringToHex(jsonstr);
-     
+
      var Timestamp  = getFormattedTimestamp();
-                              
+
      var ID         = sha256(Blockchain + From + To + Payload + Nonce + Timestamp);
      var Signature  = "";
-     
+
      SendTransaction(  ID, From, To, Timestamp, Type, Payload, Nonce, Signature, Blockchain);
-     
+
      return ID;
 }
 
@@ -396,7 +386,7 @@ async function RegisterWallet(Blockchain,PublicKey) {
 /* DOMAINS MANAGEMENT *********************************************************/
 
 
-/***************************** 
+/*****************************
  *  Resolves the domain name returning the wallet address associated to the domain name
  *  A single wallet can have multiple domains associations
  *  Blockchain : Blockchain where the domain and wallet are registered
@@ -434,14 +424,14 @@ function GetDomain(Blockchain, Name) {
 /// PARAMETRIC ASSETS MANAGEMENT ///////////////////////////////////////////////////////////////////////////////////////
 
 
-/***************************** 
+/*****************************
  *  Retrieves the list of all assets minted on a specific blockchain
  *  Blockchain: Blockchin where to request the list
  */
 async function GetAssetList(Blockchain) {
 
     if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-    
+
     let data = {
         "Blockchain" : Blockchain,
            "Version" : Version
@@ -466,7 +456,7 @@ async function GetAssetList(Blockchain) {
 
 
 
-/***************************** 
+/*****************************
  *  Retrieves an Asset Descriptor
  *  Blockchain: Blockchain where the asset is minted
  *  Name: Asset Name (example 'CIRX')
@@ -474,7 +464,7 @@ async function GetAssetList(Blockchain) {
 async function GetAsset(Blockchain, Name) {
 
     if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-    
+
     let data = {
         "Blockchain" : Blockchain,
          "AssetName" : Name,
@@ -500,7 +490,7 @@ async function GetAsset(Blockchain, Name) {
 
 
 
-/***************************** 
+/*****************************
  *  Retrieve The total, circulating and residual supply of a specified asset
  *  Blockchain: Blockchain where the asset is minted
  *  Name: Asset Name (example 'CIRX')
@@ -508,7 +498,7 @@ async function GetAsset(Blockchain, Name) {
 async function GetAssetSupply(Blockchain, Name) {
 
     if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-    
+
     let data = {
         "Blockchain" : Blockchain,
         "AssetName"  : Name,
@@ -536,14 +526,14 @@ async function GetAssetSupply(Blockchain, Name) {
 
 // VOUCHERS MANAGEMENT//////////////////////////////////////////////////////////
 
-/***************************** 
+/*****************************
  *  Retrieves an existing Voucher
  *  Blockchain: blockchain where the voucher was minted
  *  Code: voucher code
  */
 async function GetVoucher(Blockchain, Code) {
     if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-    
+
     let data = {
         "Blockchain" : Blockchain,
         "Code" : String(Code),
@@ -571,20 +561,20 @@ async function GetVoucher(Blockchain, Code) {
 
 // BLOCKS MANAGEMENT //////////////////////////////////////////////////////////////////////////////////
 
-/***************************** 
+/*****************************
  *  Retrieve All blocks in a specified range
  *  Blockchain: blockchain where to search the blocks
  *  Start: Initial block
  *  End: End block
- *  
+ *
  *  If End = 0, then Start is the number of blocks from the last one minted going backward.
  */
 async function GetBlockRange(Blockchain, Start, End) {
 
     console.log(Blockchain + ' S: ' + Start + ' E: ' + End);
-     
+
     if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-    
+
     let data = {
         "Blockchain" : Blockchain,
              "Start" : String(Start),
@@ -597,7 +587,7 @@ async function GetBlockRange(Blockchain, Start, End) {
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
     })
-    
+
     .then(response => {
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -606,22 +596,22 @@ async function GetBlockRange(Blockchain, Start, End) {
         return response.json();
     })
     .catch((error) => {
-        
+
         alert(error);
         console.error('Error:', error);
     });
 }
 
 
-/***************************** 
+/*****************************
  *  Retrieve a desired block
  *  Blockchain: blockchain where to search the block
- *  Num: Block number 
+ *  Num: Block number
  */
 async function GetBlock(Blockchain, Num) {
 
     if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-    
+
     let data = {
         "Blockchain" : Blockchain,
         "BlockNumber": String(Num),
@@ -646,15 +636,15 @@ async function GetBlock(Blockchain, Num) {
 }
 
 
-/***************************** 
+/*****************************
  *   Retrieves the blockchain block height
- *   
+ *
  *   Blockchain: blockchain where to count the blocks
  */
 async function GetBlockCount(Blockchain) {
 
     if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-    
+
     let data = {
         "Blockchain" : Blockchain,
            "Version" : Version
@@ -681,15 +671,15 @@ async function GetBlockCount(Blockchain) {
 
 // ANALYTICS ////////////////////////////////////////////////////////////////////////////////////////////////
 
-/***************************** 
+/*****************************
  *   Retrieves the Blockchain  Amalytics
- *   
+ *
  *   Blockchain: selected blockchain
  */
 async function GetAnalytics(Blockchain) {
 
     if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-    
+
     let data = {
         "Blockchain" : Blockchain,
            "Version" : Version
@@ -713,14 +703,12 @@ async function GetAnalytics(Blockchain) {
 }
 
 
-/***************************** 
+/*****************************
  *   Get The list of blockchains available in the network
- *   
+ *
  */
 async function GetBlockchains() {
 
-    if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
-    
     let data = {}
 
     return fetch(NAG_URL + 'Circular_GetBlockchains_', {
@@ -745,13 +733,13 @@ async function GetBlockchains() {
 /// TRANSACTIONS ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-/***************************** 
- * 
+/*****************************
+ *
  *  Searches a transaction by ID between the pending transactions
- *  
+ *
  *  Blockchain: Blockchain where to search the transaction
  *  TxID: Transaction ID
- *  
+ *
  */
 async function GetPendingTransaction(Blockchain, TxID) {
     try {
@@ -787,13 +775,13 @@ async function GetPendingTransaction(Blockchain, TxID) {
 /*****************************
  *   Searches a Transaction by its ID
  *   The transaction will be searched initially between the pending transactions and then in the blockchain
- *   
+ *
  *   Blockchain: blockchain where to search the transaction
  *   TxID: transaction ID
  *   Start: Starting block
  *   End: End block
- *   
- *   if End = 0 Start indicates the number of blocks starting from the last block minted 
+ *
+ *   if End = 0 Start indicates the number of blocks starting from the last block minted
  */
 async function GetTransactionbyID(Blockchain, TxID, Start, End) {
     try {
@@ -830,13 +818,13 @@ async function GetTransactionbyID(Blockchain, TxID, Start, End) {
 
 /*****************************
  *  Searches all transactions broadcasted by a specified node
- * 
+ *
  *  Blockchain: blockchain where to search the transaction
  *  NodeID: ID of the node that has broadcasted the transaction
  *  Start: Starting block
  *  End: End block
- *   
- * if End = 0 Start indicates the number of blocks starting from the last block minted 
+ *
+ * if End = 0 Start indicates the number of blocks starting from the last block minted
  */
 async function GetTransactionbyNode(Blockchain, NodeID, Start, End) {
     try {
@@ -872,13 +860,13 @@ async function GetTransactionbyNode(Blockchain, NodeID, Start, End) {
 
 /*****************************
  *  Searches all transactions Involving a specified address
- * 
+ *
  *  Blockchain: blockchain where to search the transaction
  *  Address: Can be the sender or the recipient of the transaction
  *  Start: Starting block
  *  End: End block
- *   
- * if End = 0 Start indicates the number of blocks starting from the last block minted 
+ *
+ * if End = 0 Start indicates the number of blocks starting from the last block minted
  */
 async function GetTransactionbyAddress(Blockchain, Address, Start, End) {
     try {
@@ -915,19 +903,19 @@ async function GetTransactionbyAddress(Blockchain, Address, Start, End) {
 
 /*****************************
  *  Searches all transactions Involving a specified address in a specified timeframe
- * 
+ *
  *  Blockchain: blockchain where to search the transaction
  *  Address: Can be the sender or the recipient of the transaction
  *  StartDate: Starting date
  *  endDate: End date
- *   
+ *
  */
 async function GetTransactionbyDate(Blockchain, Address, StartDate, endDate) {
     try {
         if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
         if (Address.startsWith('0x')) { Address = Address.slice(2); }
 
-        
+
         console.log("EndDate before request:", endDate);
         let data = {
             "Blockchain": Blockchain,
@@ -937,7 +925,7 @@ async function GetTransactionbyDate(Blockchain, Address, StartDate, endDate) {
                "Version" : Version
         };
         console.log("Data object:", JSON.stringify(data));
-        
+
         const response = await fetch(NAG_URL + 'Circular_GetTransactionbyDate_', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -957,10 +945,10 @@ async function GetTransactionbyDate(Blockchain, Address, StartDate, endDate) {
         throw error;
     }
 }
-      
+
 /*****************************
  *  Submits a transaction to a desired blockchain
- * 
+ *
  *  ID: Transaction ID
  *  From: Transaction Sender
  *  To: Transaction recipient
@@ -972,22 +960,22 @@ async function GetTransactionbyDate(Blockchain, Address, StartDate, endDate) {
  *  Blockchain: Blockchain where the transaction will be submitted
  */
 async function SendTransaction( ID, // Transaction ID (hash)
-                                From, // Sender Wallet address 
+                                From, // Sender Wallet address
                                 To, // Receiver Wallet Address
                                 Timestamp, // Transaction Timestamp
-                                Type, // Type of Transaction 
+                                Type, // Type of Transaction
                                 Payload, // Payload of transaction in accordance with the type
                                 Nonce,
                                 Signature, // Private Key for the Sender Wallet Address
                                 Blockchain  // Blockchain on which the transaction will be stored (it will involve only assetts on the same chain)
-                                ) 
+                                )
 {
     if (From.startsWith('0x'))       { From = From.slice(2); }
     if (To.startsWith('0x'))         { To = To.slice(2); }
     if (ID.startsWith('0x'))         { ID = ID.slice(2); }
     if (Payload.startsWith('0x'))    { Payload = Payload.slice(2); }
     if (Signature.startsWith('0x'))  { Signature = Signature.slice(2); }
-    if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }     
+    if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
     let data = {
                 "ID" : ID,
               "From" : From,
@@ -998,7 +986,7 @@ async function SendTransaction( ID, // Transaction ID (hash)
          "Signature" : Signature,
         "Blockchain" : Blockchain,
               "Type" : Type,
-           "Version" : Version 
+           "Version" : Version
     }
 
     try {
@@ -1011,7 +999,7 @@ async function SendTransaction( ID, // Transaction ID (hash)
 
              // Check if the response is in JSON format
             try {
-                    const jsonResponse = JSON.parse(text); 
+                    const jsonResponse = JSON.parse(text);
                     return jsonResponse; // Return the parsed JSON
                 } catch(e) {
                     // If the response is not in JSON format, return it as-is with status
@@ -1029,12 +1017,12 @@ async function SendTransaction( ID, // Transaction ID (hash)
 var intervalSec = 5;
 /*****************************
  *    Recursive transaction finality polling
- *    will search a transaction every  intervalSec seconds with a desired timeout. 
- *    
+ *    will search a transaction every  intervalSec seconds with a desired timeout.
+ *
  *    Blockchain: blockchain where the transaction was submitted
  *    TxID: Transaction ID
  *    timeoutSec: Waiting timeout
- *    
+ *
  */
 function GetTransactionOutcome(Blockchain, TxID, timeoutSec) {
     return new Promise((resolve, reject) => {
@@ -1071,7 +1059,7 @@ function GetTransactionOutcome(Blockchain, TxID, timeoutSec) {
     });
 }
 
-            
+
   // Public API
   return {
                 GetWallet : GetWallet,
@@ -1089,7 +1077,7 @@ function GetTransactionOutcome(Blockchain, TxID, timeoutSec) {
                  GetAsset : GetAsset,
                GetVoucher : GetVoucher,
            GetAssetSupply : GetAssetSupply,
-              SignMessage : SignMessage, 
+              SignMessage : SignMessage,
              getPublicKey : getPublicKey,
     getFormattedTimestamp : getFormattedTimestamp,
           verifySignature : verifySignature,
@@ -1105,6 +1093,6 @@ function GetTransactionOutcome(Blockchain, TxID, timeoutSec) {
      GetTransactionbyDate : GetTransactionbyDate,
           SendTransaction : SendTransaction,
     GetTransactionOutcome : GetTransactionOutcome
-                
-  };  
-})();
+
+  };
+};
