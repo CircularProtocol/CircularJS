@@ -1179,6 +1179,7 @@ function GetTransactionOutcome(Blockchain, TxID, timeoutSec) {
   return {
               CheckWallet : CheckWallet,
                 GetWallet : GetWallet,
+           GetWalletNonce : GetWalletNonce,
     GetLatestTransactions : GetLatestTransactions,
          GetWalletBalance : GetWalletBalance,
              TestContract : TestContract,
