@@ -29,7 +29,7 @@ var Circular = (function(){
  
 
 // Support Node Software Version 
-const Version = '1.0.7';
+const Version = '1.0.8';
 
 // Library Errors Variable  
 var LastError;
@@ -61,13 +61,15 @@ function padNumber(num) {
  *  YYYY:MM:DD-hh:mm:ss
  */
 function getFormattedTimestamp() {
-    let date = new Date();
-    let year = date.getFullYear();
-    let month = padNumber(date.getMonth() + 1);  
-    let day = padNumber(date.getDate());
-    let hours = padNumber(date.getHours());
-    let minutes = padNumber(date.getMinutes());
-    let seconds = padNumber(date.getSeconds());
+    let date = new Date(); 
+    let year = date.getUTCFullYear(); 
+    let month = padNumber(date.getUTCMonth() + 1);  
+    let day = padNumber(date.getUTCDate()); 
+    let hours = padNumber(date.getUTCHours()); 
+    let minutes = padNumber(date.getUTCMinutes()); 
+    let seconds = padNumber(date.getUTCSeconds()); 
+
+    // Formats the date and time in a specific format and returns it
     return `${year}:${month}:${day}-${hours}:${minutes}:${seconds}`;
 }
 
@@ -263,7 +265,7 @@ function CallContract(Blockchain, From, Address, Request){
      "Blockchain" : HexFix(Blockchain),
            "From" : HexFix(From),
         "Address" : HexFix(Address), 
-        "Request" : StringToHex(Request), 
+        "Request" : stringToHex(Request), 
       "Timestamp" : getFormattedTimestamp(),
         "Version" : Version
     }
@@ -285,6 +287,43 @@ function CallContract(Blockchain, From, Address, Request){
 }
 
 
+
+/* WALLET FUNCTIONS  **********************************************************/
+
+/* 
+ *  Checks if a Wallet is registered on the chain 
+ *  
+ *  Blockchain: Blockchain where the wallet is registered
+ *  Address: Wallet Address
+ */
+function CheckWallet(Blockchain, Address) {
+
+   if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
+   if (Address.startsWith('0x')) { AAddress = Address.slice(2); }  
+    
+    let data = {
+        "Blockchain" : HexFix(Blockchain),
+           "Address" : HexFix(Address),
+           "Version" : Version
+    }
+
+    return fetch(NAG_URL + 'Circular_CheckWallet_', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json',},
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .catch((error) => {
+        alert(error);
+        console.error('Error:', error);
+    });
+}
+        
 
 /* WALLET FUNCTIONS  **********************************************************/
 
@@ -322,7 +361,40 @@ function GetWallet(Blockchain, Address) {
     });
 }
 
+/* 
+ *  Retrieves a Wallet 
+ *  
+ *  Blockchain: Blockchain where the wallet is registered
+ *  Address: Wallet Address
+ */
+function GetLatestTransactions(Blockchain, Address) {
 
+   if (Blockchain.startsWith('0x')) { Blockchain = Blockchain.slice(2); }
+     
+    
+    let data = {
+        "Blockchain" : HexFix(Blockchain),
+           "Address" : HexFix(Address),
+           "Version" : Version
+    }
+
+    return fetch(NAG_URL + 'Circular_GetLatestTransactions_', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json',},
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .catch((error) => {
+        alert(error);
+        console.error('Error:', error);
+    });
+}
+        
 
 /***************************** 
  *   Retrieves the balance of a specified asset in a Wallet
@@ -356,7 +428,35 @@ function GetWalletBalance(Blockchain, Address, Asset) {
     });
 }
 
+/* 
+ *   Retrieves the Nonce of a Wallet
+ *   Blockchain: Blockchain where the wallet is registered
+ *   Address: Wallet address
+ */
+function GetWalletNonce(Blockchain, Address) {
 
+    let data = {
+        "Blockchain" : HexFix(Blockchain),
+           "Address" : HexFix(Address),
+           "Version" : Version
+    }
+
+    return fetch(NAG_URL + 'Circular_GetWalletNonce_', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json',},
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .catch((error) => {
+        alert(error);
+        console.error('Error:', error);
+    });
+}
 
 /***************************** 
  *   Register a wallet on a desired blockchain.
@@ -365,6 +465,9 @@ function GetWalletBalance(Blockchain, Address, Asset) {
  *   PublicKey: Wallet PublicKey
  *   
  *   Without registration on the blockchain the wallet will not be reachable
+ *
+ *   TIS FUNCTIONALITY WILL BE DEPRECATED IN THE FOLLOWING VERSIONS
+ *
  */
 async function RegisterWallet(Blockchain,PublicKey) {
 
@@ -913,7 +1016,7 @@ async function GetTransactionbyAddress(Blockchain, Address, Start, End) {
     }
 }
 
-/*****************************
+/*
  *  Searches all transactions Involving a specified address in a specified timeframe
  * 
  *  Blockchain: blockchain where to search the transaction
@@ -1026,7 +1129,7 @@ async function SendTransaction( ID, // Transaction ID (hash)
 
 
 // Polling Interval 5 seconds
-var intervalSec = 5;
+var intervalSec = 10;
 /*****************************
  *    Recursive transaction finality polling
  *    will search a transaction every  intervalSec seconds with a desired timeout. 
@@ -1074,7 +1177,9 @@ function GetTransactionOutcome(Blockchain, TxID, timeoutSec) {
             
   // Public API
   return {
+              CheckWallet : CheckWallet,
                 GetWallet : GetWallet,
+    GetLatestTransactions : GetLatestTransactions,
          GetWalletBalance : GetWalletBalance,
              TestContract : TestContract,
              CallContract : CallContract,
