@@ -6,10 +6,10 @@
         CIRCULAR GLOBAL LEDGERS, INC. - USA
         
                      
-        Version : 1.0.7
+        Version : 1.0.8
                      
         Creation: 7/12/2022
-        Update  : 5/16/2024
+        Update  : 8/15/2024
                   
         Originator: Gianluca De Novi, PhD
         Contributors: <names here>           
@@ -22,7 +22,7 @@
 
 
 
-/*****************************
+/*
  *   Circular Class 
  */
 var Circular = (function(){
@@ -34,7 +34,7 @@ const Version = '1.0.8';
 // Library Errors Variable  
 var LastError;
 
-/*****************************
+/*
  *  Retrieves the Library Error
  */
 function GetError(){  return LastError; }
@@ -44,7 +44,7 @@ function GetError(){  return LastError; }
 /* HELPER FUNCTIONS ***********************************************************/
 
 
-/*****************************
+/* 
  * Function to add a leading zero to numbers less than 10
  * num : number to pad
  * 
@@ -56,10 +56,21 @@ function padNumber(num) {
 
 
 
-/***************************** 
+/* 
  *  Generate Timestamp formated
  *  YYYY:MM:DD-hh:mm:ss
  */
+/*function getFormattedTimestamp() {
+    let date = new Date();
+    let year = date.getFullYear();
+    let month = padNumber(date.getMonth() + 1);  
+    let day = padNumber(date.getDate());
+    let hours = padNumber(date.getHours());
+    let minutes = padNumber(date.getMinutes());
+    let seconds = padNumber(date.getSeconds());
+    return `${year}:${month}:${day}-${hours}:${minutes}:${seconds}`;
+}*/
+
 function getFormattedTimestamp() {
     let date = new Date(); 
     let year = date.getUTCFullYear(); 
@@ -75,7 +86,7 @@ function getFormattedTimestamp() {
 
 
     
-/***************************** 
+/* 
  *  Sign a message using secp256k1
  *  message: Message to sign
  *  provateKey: Private key in hex format (minus '0x')
@@ -95,7 +106,7 @@ function SignMessage( message, privateKey) {
 
 
 
-/*****************************
+/*
  *   Verify Message Signature
  */
 function verifySignature(publicKey, message, signature) {
@@ -111,7 +122,7 @@ function verifySignature(publicKey, message, signature) {
 
  
 
-/*****************************
+/*
  *   Returns a public key from a private key
  */
 function getPublicKey(privateKey) {
@@ -127,7 +138,7 @@ function getPublicKey(privateKey) {
 
 
 
-/*****************************
+/*
  *  Convert a string in its hexadecimal representation without '0x'
  */
 function stringToHex(str) {
@@ -141,7 +152,7 @@ function stringToHex(str) {
 
 
 
-/*****************************
+/*
  *  Converts a hexadecimal string in a regulare string 
  */
 function hexToString(hex) {
@@ -159,7 +170,7 @@ function hexToString(hex) {
 
 
 
-/*****************************
+/*
  *
  *  removes '0x' from hexadecimal numbers if the have it
  * 
@@ -190,8 +201,9 @@ var NAG_KEY='';
 // Default NAG Link 
 var NAG_URL='https://nag.circularlabs.io/NAG.php?cep=';
 
+var NETWORK_NODE='';
 
-/*****************************
+/*
  *  Sets the Application NAG Key
  */
 function SetNAGKey(NAGKey)
@@ -201,7 +213,7 @@ function SetNAGKey(NAGKey)
 
 
 
-/*****************************
+/*
  *  Sets the Network Access Gateway (NAG) URL 
  *  If not used, the default URL is selected 
  */
@@ -210,12 +222,22 @@ function SetNAGURL(NURL)
     NAG_URL = NURL;
 }
 
+/*
+ *  Sets the Network Access Gateway (NAG) URL 
+ *  If not used, the default URL is selected 
+ */
+function SetNode(Address)
+{
+    if(Address!='')  NETWORK_NODE = 'node=' + Address;
+    else             NETWORK_NODE=''; 
+}
+
 
 
 
 /* Smart Contracts ************************************************************/
 
-/*****************************
+/*
  *   Test the execution of a smart contract project
  *   
  *   Blockchain: Blockchain where the smart contract will be tested
@@ -233,7 +255,7 @@ function TestContract(Blockchain, From, Project) {
         "Version" : Version
     }
     
-    return fetch(NAG_URL + 'Circular_TestContract_', {
+    return fetch(NAG_URL + 'Circular_TestContract_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -251,7 +273,7 @@ function TestContract(Blockchain, From, Project) {
 
 
 
-/*****************************
+/*
  *  Local Smart Contract Call
  *  
  *  Blockchain: Blockchain where the Smart Contract is deployed
@@ -270,7 +292,7 @@ function CallContract(Blockchain, From, Address, Request){
         "Version" : Version
     }
     
-    return fetch(NAG_URL + 'Circular_CallContract_', {
+    return fetch(NAG_URL + 'Circular_CallContract_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -307,7 +329,7 @@ function CheckWallet(Blockchain, Address) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_CheckWallet_', {
+    return fetch(NAG_URL + 'Circular_CheckWallet_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -319,15 +341,12 @@ function CheckWallet(Blockchain, Address) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
-        
 
-/* WALLET FUNCTIONS  **********************************************************/
 
-/***************************** 
+/* 
  *  Retrieves a Wallet 
  *  
  *  Blockchain: Blockchain where the wallet is registered
@@ -344,7 +363,7 @@ function GetWallet(Blockchain, Address) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetWallet_', {
+    return fetch(NAG_URL + 'Circular_GetWallet_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -356,10 +375,10 @@ function GetWallet(Blockchain, Address) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
+
 
 /* 
  *  Retrieves a Wallet 
@@ -378,7 +397,7 @@ function GetLatestTransactions(Blockchain, Address) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetLatestTransactions_', {
+    return fetch(NAG_URL + 'Circular_GetLatestTransactions_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -390,13 +409,13 @@ function GetLatestTransactions(Blockchain, Address) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
-        
 
-/***************************** 
+
+
+/* 
  *   Retrieves the balance of a specified asset in a Wallet
  *   Blockchain: Blockchain where the wallet is registered
  *   Address: Wallet address
@@ -411,7 +430,7 @@ function GetWalletBalance(Blockchain, Address, Asset) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetWalletBalance_', {
+    return fetch(NAG_URL + 'Circular_GetWalletBalance_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -423,10 +442,10 @@ function GetWalletBalance(Blockchain, Address, Asset) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
+
 
 /* 
  *   Retrieves the Nonce of a Wallet
@@ -441,7 +460,7 @@ function GetWalletNonce(Blockchain, Address) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetWalletNonce_', {
+    return fetch(NAG_URL + 'Circular_GetWalletNonce_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -453,21 +472,19 @@ function GetWalletNonce(Blockchain, Address) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
 
-/***************************** 
+
+
+/* 
  *   Register a wallet on a desired blockchain.
  *   The same wallet can be registered on multiple blockchains
  *   Blockchain: Blockchain where the wallet will be registered
  *   PublicKey: Wallet PublicKey
  *   
  *   Without registration on the blockchain the wallet will not be reachable
- *
- *   TIS FUNCTIONALITY WILL BE DEPRECATED IN THE FOLLOWING VERSIONS
- *
  */
 async function RegisterWallet(Blockchain,PublicKey) {
 
@@ -499,7 +516,7 @@ async function RegisterWallet(Blockchain,PublicKey) {
 /* DOMAINS MANAGEMENT *********************************************************/
 
 
-/***************************** 
+/* 
  *  Resolves the domain name returning the wallet address associated to the domain name
  *  A single wallet can have multiple domains associations
  *  Blockchain : Blockchain where the domain and wallet are registered
@@ -515,7 +532,7 @@ function GetDomain(Blockchain, Name) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_ResolveDomain_', {
+    return fetch(NAG_URL + 'Circular_ResolveDomain_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -527,7 +544,6 @@ function GetDomain(Blockchain, Name) {
         return response.json();
     })
     .catch((error) => {
-        //alert(error);
         console.error('Error:', error);
     });
 }
@@ -537,7 +553,7 @@ function GetDomain(Blockchain, Name) {
 /// PARAMETRIC ASSETS MANAGEMENT ///////////////////////////////////////////////////////////////////////////////////////
 
 
-/***************************** 
+/* 
  *  Retrieves the list of all assets minted on a specific blockchain
  *  Blockchain: Blockchin where to request the list
  */
@@ -550,7 +566,7 @@ async function GetAssetList(Blockchain) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetAssetList_', {
+    return fetch(NAG_URL + 'Circular_GetAssetList_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -562,14 +578,13 @@ async function GetAssetList(Blockchain) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
 
 
 
-/***************************** 
+/* 
  *  Retrieves an Asset Descriptor
  *  Blockchain: Blockchain where the asset is minted
  *  Name: Asset Name (example 'CIRX')
@@ -584,7 +599,7 @@ async function GetAsset(Blockchain, Name) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetAsset_', {
+    return fetch(NAG_URL + 'Circular_GetAsset_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -596,14 +611,13 @@ async function GetAsset(Blockchain, Name) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
 
 
 
-/***************************** 
+/* 
  *  Retrieve The total, circulating and residual supply of a specified asset
  *  Blockchain: Blockchain where the asset is minted
  *  Name: Asset Name (example 'CIRX')
@@ -618,7 +632,7 @@ async function GetAssetSupply(Blockchain, Name) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetAssetSupply_', {
+    return fetch(NAG_URL + 'Circular_GetAssetSupply_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -630,7 +644,6 @@ async function GetAssetSupply(Blockchain, Name) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
@@ -639,7 +652,7 @@ async function GetAssetSupply(Blockchain, Name) {
 
 // VOUCHERS MANAGEMENT//////////////////////////////////////////////////////////
 
-/***************************** 
+/* 
  *  Retrieves an existing Voucher
  *  Blockchain: blockchain where the voucher was minted
  *  Code: voucher code
@@ -653,7 +666,7 @@ async function GetVoucher(Blockchain, Code) {
         "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetVoucher_', {
+    return fetch(NAG_URL + 'Circular_GetVoucher_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -665,7 +678,6 @@ async function GetVoucher(Blockchain, Code) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
@@ -674,7 +686,7 @@ async function GetVoucher(Blockchain, Code) {
 
 // BLOCKS MANAGEMENT //////////////////////////////////////////////////////////////////////////////////
 
-/***************************** 
+/* 
  *  Retrieve All blocks in a specified range
  *  Blockchain: blockchain where to search the blocks
  *  Start: Initial block
@@ -695,7 +707,7 @@ async function GetBlockRange(Blockchain, Start, End) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetBlockRange_', {
+    return fetch(NAG_URL + 'Circular_GetBlockRange_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -709,14 +721,12 @@ async function GetBlockRange(Blockchain, Start, End) {
         return response.json();
     })
     .catch((error) => {
-        
-        alert(error);
         console.error('Error:', error);
     });
 }
 
 
-/***************************** 
+/* 
  *  Retrieve a desired block
  *  Blockchain: blockchain where to search the block
  *  Num: Block number 
@@ -731,7 +741,7 @@ async function GetBlock(Blockchain, Num) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetBlock_', {
+    return fetch(NAG_URL + 'Circular_GetBlock_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -743,13 +753,12 @@ async function GetBlock(Blockchain, Num) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
 
 
-/***************************** 
+/* 
  *   Retrieves the blockchain block height
  *   
  *   Blockchain: blockchain where to count the blocks
@@ -763,7 +772,7 @@ async function GetBlockCount(Blockchain) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetBlockHeight_', {
+    return fetch(NAG_URL + 'Circular_GetBlockHeight_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -775,7 +784,6 @@ async function GetBlockCount(Blockchain) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
@@ -784,7 +792,7 @@ async function GetBlockCount(Blockchain) {
 
 // ANALYTICS ////////////////////////////////////////////////////////////////////////////////////////////////
 
-/***************************** 
+/* 
  *   Retrieves the Blockchain  Amalytics
  *   
  *   Blockchain: selected blockchain
@@ -798,7 +806,7 @@ async function GetAnalytics(Blockchain) {
            "Version" : Version
     }
 
-    return fetch(NAG_URL + 'Circular_GetAnalytics_', {
+    return fetch(NAG_URL + 'Circular_GetAnalytics_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -810,13 +818,12 @@ async function GetAnalytics(Blockchain) {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
 
 
-/***************************** 
+/* 
  *   Get The list of blockchains available in the network
  *   
  */
@@ -826,7 +833,7 @@ async function GetBlockchains() {
     
     let data = {}
 
-    return fetch(NAG_URL + 'Circular_GetBlockchains_', {
+    return fetch(NAG_URL + 'Circular_GetBlockchains_' + NETWORK_NODE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json',},
         body: JSON.stringify(data)
@@ -838,7 +845,6 @@ async function GetBlockchains() {
         return response.json();
     })
     .catch((error) => {
-        alert(error);
         console.error('Error:', error);
     });
 }
@@ -848,7 +854,7 @@ async function GetBlockchains() {
 /// TRANSACTIONS ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-/***************************** 
+/* 
  * 
  *  Searches a transaction by ID between the pending transactions
  *  
@@ -867,7 +873,7 @@ async function GetPendingTransaction(Blockchain, TxID) {
                "Version" : Version
         };
 
-        const response = await fetch(NAG_URL + 'Circular_GetPendingTransaction_', {
+        const response = await fetch(NAG_URL + 'Circular_GetPendingTransaction_' + NETWORK_NODE, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -879,15 +885,13 @@ async function GetPendingTransaction(Blockchain, TxID) {
 
         return response.json();
     } catch (error) {
-        alert(error);
         console.error('Error:', error);
-        // Optionally rethrow the error if needed
         throw error;
     }
 }
 
 
-/*****************************
+/*
  *   Searches a Transaction by its ID
  *   The transaction will be searched initially between the pending transactions and then in the blockchain
  *   
@@ -911,7 +915,7 @@ async function GetTransactionbyID(Blockchain, TxID, Start, End) {
                "Version" : Version
         };
 
-        const response = await fetch(NAG_URL + 'Circular_GetTransactionbyID_', {
+        const response = await fetch(NAG_URL + 'Circular_GetTransactionbyID_' + NETWORK_NODE, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -923,15 +927,13 @@ async function GetTransactionbyID(Blockchain, TxID, Start, End) {
 
         return response.json();
     } catch (error) {
-        alert(error);
         console.error('Error:', error);
-        // Optionally rethrow the error if needed
         throw error;
     }
 }
 
 
-/*****************************
+/*
  *  Searches all transactions broadcasted by a specified node
  * 
  *  Blockchain: blockchain where to search the transaction
@@ -954,7 +956,7 @@ async function GetTransactionbyNode(Blockchain, NodeID, Start, End) {
                "Version" : Version
         };
 
-        const response = await fetch(NAG_URL + 'Circular_GetTransactionbyNode_', {
+        const response = await fetch(NAG_URL + 'Circular_GetTransactionbyNode_' + NETWORK_NODE, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -966,14 +968,12 @@ async function GetTransactionbyNode(Blockchain, NodeID, Start, End) {
 
         return response.json();
     } catch (error) {
-        alert(error);
         console.error('Error:', error);
-        // Optionally rethrow the error if needed
         throw error;
     }
 }
 
-/*****************************
+/*
  *  Searches all transactions Involving a specified address
  * 
  *  Blockchain: blockchain where to search the transaction
@@ -996,7 +996,7 @@ async function GetTransactionbyAddress(Blockchain, Address, Start, End) {
                "Version" : Version
         };
 
-        const response = await fetch(NAG_URL + 'Circular_GetTransactionbyAddress_', {
+        const response = await fetch(NAG_URL + 'Circular_GetTransactionbyAddress_' + NETWORK_NODE, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -1008,10 +1008,7 @@ async function GetTransactionbyAddress(Blockchain, Address, Start, End) {
 
         return response.json();
     } catch (error) {
-        alert(error);
         console.error('Error:', error);
-
-        // Optionally rethrow the error if needed
         throw error;
     }
 }
@@ -1041,7 +1038,7 @@ async function GetTransactionbyDate(Blockchain, Address, StartDate, endDate) {
         };
         console.log("Data object:", JSON.stringify(data));
         
-        const response = await fetch(NAG_URL + 'Circular_GetTransactionbyDate_', {
+        const response = await fetch(NAG_URL + 'Circular_GetTransactionbyDate_' + NETWORK_NODE, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -1053,15 +1050,12 @@ async function GetTransactionbyDate(Blockchain, Address, StartDate, endDate) {
 
         return response.json();
     } catch (error) {
-        alert(error);
         console.error('Error:', error);
-
-        // Optionally rethrow the error if needed
         throw error;
     }
 }
       
-/*****************************
+/*
  *  Submits a transaction to a desired blockchain
  * 
  *  ID: Transaction ID
@@ -1105,7 +1099,7 @@ async function SendTransaction( ID, // Transaction ID (hash)
     }
 
     try {
-            const response = await fetch(NAG_URL + 'Circular_AddTransaction_', {
+            const response = await fetch(NAG_URL + 'Circular_AddTransaction_' + NETWORK_NODE, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', },
                 body: JSON.stringify(data)});
@@ -1128,9 +1122,12 @@ async function SendTransaction( ID, // Transaction ID (hash)
 }
 
 
-// Polling Interval 5 seconds
-var intervalSec = 10;
-/*****************************
+
+// Send a transaction to the blockchain
+
+
+var intervalSec = 15;
+/*
  *    Recursive transaction finality polling
  *    will search a transaction every  intervalSec seconds with a desired timeout. 
  *    
@@ -1186,6 +1183,7 @@ function GetTransactionOutcome(Blockchain, TxID, timeoutSec) {
              CallContract : CallContract,
                 SetNAGKey : SetNAGKey,
                 SetNAGURL : SetNAGURL,
+                  SetNode : SetNode,
                    HexFix : HexFix,
               stringToHex : stringToHex,
               hexToString : hexToString,
